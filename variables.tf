@@ -17,7 +17,7 @@ Optional:
         - type (required)
     - inbound_ip_rule (block):
         - action (optional)
-        - ip_mask (required)
+        - ip_mask (optional)
     - input_mapping_default_values (block):
         - data_version (optional)
         - event_type (optional)
@@ -35,19 +35,19 @@ EOT
     location                                  = string
     name                                      = string
     resource_group_name                       = string
-    auto_create_topic_with_first_subscription = optional(bool)   # Default: true
-    auto_delete_topic_with_last_subscription  = optional(bool)   # Default: true
-    input_schema                              = optional(string) # Default: "EventGridSchema"
-    local_auth_enabled                        = optional(bool)   # Default: true
-    public_network_access_enabled             = optional(bool)   # Default: true
+    auto_create_topic_with_first_subscription = optional(bool)
+    auto_delete_topic_with_last_subscription  = optional(bool)
+    input_schema                              = optional(string)
+    local_auth_enabled                        = optional(bool)
+    public_network_access_enabled             = optional(bool)
     tags                                      = optional(map(string))
     identity = optional(object({
       identity_ids = optional(set(string))
       type         = string
     }))
     inbound_ip_rule = optional(list(object({
-      action  = optional(string) # Default: "Allow"
-      ip_mask = string
+      action  = optional(string)
+      ip_mask = optional(string)
     })))
     input_mapping_default_values = optional(object({
       data_version = optional(string)
@@ -63,14 +63,6 @@ EOT
       topic        = optional(string)
     }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.eventgrid_domains : (
-        v.inbound_ip_rule == null || (length(v.inbound_ip_rule) <= 128)
-      )
-    ])
-    error_message = "Each inbound_ip_rule list must contain at most 128 items"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_eventgrid_domain's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
